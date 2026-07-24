@@ -258,6 +258,10 @@ static void reset_extra_save_data_defaults(struct TengokuSaveData *data) {
 
     set_reading_material_unlocked(data, READING_MATERIAL_CREDITS, TRUE);
 
+    extra->seenCredits = 0;
+    extra->receivedIndex = 0;
+    extra->mcMuffins = 0;
+
     update_extra_save_data_checksum(extra);
 }
 
@@ -267,6 +271,25 @@ void init_save_buffer(void) {
     set_sram_fast_func();
     D_030046a8 = get_save_buffer_start();
     sSramSaveWriteState.active = FALSE;
+}
+
+void open_all_levels(void) {
+    struct TengokuSaveData *data = &D_030046a8->data;
+    u32 i;
+    
+    // unlock all levels
+    for (i = 0; i < TOTAL_LEVELS; i++) {
+        set_level_state(data, i, LEVEL_STATE_CLOSED);
+        //set_level_state(data, i, LEVEL_STATE_OPEN);
+        set_level_score(data, i, DEFAULT_LEVEL_SCORE);
+    }
+    set_level_state(data, LEVEL_CAFE, LEVEL_STATE_HIDDEN);
+    set_level_state(data, LEVEL_RHYTHM_TOYS, LEVEL_STATE_HIDDEN);
+    set_level_state(data, LEVEL_ENDLESS_GAMES, LEVEL_STATE_HIDDEN);
+    set_level_state(data, LEVEL_DRUM_LESSONS, LEVEL_STATE_HIDDEN);
+    set_level_state(data, LEVEL_STAFF_CREDIT, LEVEL_STATE_CLOSED);
+    // set_level_state(data, LEVEL_STAFF_CREDIT, LEVEL_STATE_OPEN);
+    set_level_state(data, LEVEL_LIVE_MENU, LEVEL_STATE_HIDDEN);
 }
 
 

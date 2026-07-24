@@ -105,6 +105,9 @@ extern struct SaveBuffer {
             u32 checksum;   // magic and below
             char magic[4];  // "ENOT"
             u16 version;    // convinient if upgrade needed (new games and other similar things)
+            u16 receivedIndex;
+            u16 seenCredits;
+            u16 mcMuffins;
             u16 extraLevelScores[TOTAL_EXTRA_LEVELS];
             u16 extraLevelStates[TOTAL_EXTRA_LEVELS];
             u16 extraLevelTotalPlays[TOTAL_EXTRA_LEVELS];
@@ -127,6 +130,7 @@ extern s32 generate_save_buffer_checksum(s32 *buffer, u32 size);
 extern void on_extra_save_upgrade(u16 oldVersion, struct ExtraTengokuSaveData *extra);
 extern void init_save_buffer(void);
 extern void clear_save_data(void);
+extern void open_all_levels(void);
 extern void set_playtest_save_data(void);
 extern s32 copy_to_save_buffer(u8 *cartRAM);
 extern s32 copy_sram_to_save_buffer(void);

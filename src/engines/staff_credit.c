@@ -35,7 +35,10 @@ void staff_credit_init_gfx1(void) {
 
 // Game Engine Start
 void staff_credit_engine_start(u8 version) {
+    struct ExtraTengokuSaveData *extra = &D_030046a8->data.extraData;
     gStaffCredit->version = version;
+    
+    extra->seenCredits = 0xDEAD;
     
     staff_credit_init_gfx1();
     scene_show_obj_layer();
