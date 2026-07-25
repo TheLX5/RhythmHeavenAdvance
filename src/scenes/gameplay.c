@@ -628,6 +628,7 @@ void gameplay_check_for_perfect(u32 assessInputs) {
 
 // [func_0801765c] Register Imperfect Input
 void gameplay_register_imperfect_input(void) {
+    //return;
     if (!gGameplay->perfectFailed && gGameplay->goingForPerfect && gGameplay->assessPerfectInputs) {
         sprite_set_anim(gSpriteHandler, gGameplay->perfectSprite, anim_gameplay_perfect_miss, 0, 1, 0, 2);
         play_sound(&s_f_fail_perfect_seqData);

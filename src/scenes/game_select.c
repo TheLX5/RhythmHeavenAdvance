@@ -121,7 +121,8 @@ void get_all_uncleared_campaigns(void) {
 
     for (i = 0; i < ACTIVE_AVAILABLE_CAMPAIGNS; i++) {
         if (!get_campaign_cleared(&D_030046a8->data, i)) {
-            if (get_level_state_from_grid_xy(gift->x, gift->y) == LEVEL_STATE_OPEN) {
+            // MEDAL REQUIREMENT
+            if (get_level_state_from_grid_xy(gift->x, gift->y) == LEVEL_STATE_HAS_MEDAL) {
                 notice->indexes[notice->totalAvailable] = i;
                 notice->totalAvailable++;
             }
@@ -142,7 +143,7 @@ void start_new_campaign(void) {
         return;
     }
 
-    playsUntilNewCampaign = 0;
+    playsUntilNewCampaign = 1;
     /*
     if (D_030046a8->data.totalMedals < BASE_CAMPAIGN_MEDAL_GATE) {
         playsUntilNewCampaign = 1;
@@ -950,9 +951,9 @@ void game_select_scene_start(void *sVar, s32 dArg) {
             gGameSelect->baristaLevelEventTimer = 60;
         }
 
-        if ((get_level_id_from_grid_xy(prevX, prevY) == LEVEL_REMIX_6) && (recentLevelState >= LEVEL_STATE_CLEARED)) {
+        /*if ((get_level_id_from_grid_xy(prevX, prevY) == LEVEL_REMIX_6) && (recentLevelState >= LEVEL_STATE_CLEARED)) {
             enable_game_select_2_bgm();
-        }
+        }*/
     } else {
         #ifdef TEMPOUP
         if (game_select_try_queue_tempo_up_unlock(TRUE)) {

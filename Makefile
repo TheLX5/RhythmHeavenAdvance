@@ -68,7 +68,7 @@ REV    := 0 # Note the REV 1 is not supported by the team and bugs or issues rel
 # Preprocessor defines
 
 # Features: SFX, PLUS, PLAYTEST, PARADISE, RUMBLE
-FEATURES ?= 
+FEATURES ?= PLUS
 DEFINES := REV=$(REV) $(FEATURES)
 C_DEFINES := $(foreach d,$(DEFINES),-D$(d))
 
@@ -195,7 +195,7 @@ $(BUILD_DIRS):
 	$(V)mkdir -p $@
 
 $(OUTPUT).gba	:	$(OUTPUT).elf
-	$(V)$(OBJCOPY) --pad-to=0x2000000 --gap-fill=0x00 -O binary $< $@
+	$(V)$(OBJCOPY) --pad-to=0x2000000 --gap-fill=0xFF -O binary $< $@
 	$(call step,ROM Assembled!)
 
 $(OUTPUT).elf	:	$(OFILES) | $(BUILD)/$(LD_SCRIPT)
