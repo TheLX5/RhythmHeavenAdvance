@@ -108,6 +108,8 @@ extern struct SaveBuffer {
             u16 receivedIndex;
             u16 seenCredits;
             u16 mcMuffins;
+            u16 beepCount;
+            u16 updateUIMedals;
             u16 extraLevelScores[TOTAL_EXTRA_LEVELS];
             u16 extraLevelStates[TOTAL_EXTRA_LEVELS];
             u16 extraLevelTotalPlays[TOTAL_EXTRA_LEVELS];

@@ -1437,6 +1437,11 @@ void game_select_scene_update(void *sVar, s32 dArg) {
         return;
     }
 
+    if (D_030046a8->data.extraData.updateUIMedals != 0) {
+        D_030046a8->data.extraData.updateUIMedals = 0;
+        game_select_refresh_medal_count(127);
+    }
+
     bgOfsX = D_03004b10.BG_OFS[BG_LAYER_3].x;
     bgOfsY = D_03004b10.BG_OFS[BG_LAYER_3].y;
 
@@ -1581,12 +1586,14 @@ u32 game_select_check_level_event_req(s32 x, s32 y, s32 newState) {
     const s8 *requirements;
     s32 state;
 
+    // TODO: Make better
+    return FALSE;
+
     gridEntry = game_select_grid_data + x + (y * GS_GRID_WIDTH);
 
     if (gridEntry->id < 0) {
         return FALSE;
     }
-    return FALSE;
 
     state = get_level_state(saveData, gridEntry->id);
     requirements = NULL;
@@ -1614,7 +1621,7 @@ u32 game_select_check_level_event_req(s32 x, s32 y, s32 newState) {
         }
 
         if (requirements[0] == LEVEL_EVENT_REQ_TOTAL_MEDALS) {
-            if (saveData->totalMedals < (u8)requirements[1]) {
+            if (D_030046a8->data.extraData.mcMuffins < (u8)requirements[1]) {
                 return FALSE;
             }
             requirements += 3;
@@ -1773,7 +1780,7 @@ u32 game_select_process_level_event_targets(const s8 *eventTargets) {
                 }
             }
         }
-
+        /*
         else if (game_select_check_level_event_req(x, y, LEVEL_STATE_CLOSED)) {
             s32 args;
 
@@ -1789,7 +1796,7 @@ u32 game_select_process_level_event_targets(const s8 *eventTargets) {
             }
             save_level_state_from_grid_xy(x, y, LEVEL_STATE_APPEARING);
         }
-
+        */
         eventTargets += 2;
     }
 }
