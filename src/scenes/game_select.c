@@ -1430,8 +1430,11 @@ void game_select_link_sprite_xy_to_bg(s16 sprite) {
 
 // Scene Update (Active)
 void game_select_scene_update(void *sVar, s32 dArg) {
+    struct LevelData *levelData;
     s16 bgOfsX, bgOfsY;
-    s32 i;
+    s32 i, x, y;
+    s32 id, state, type;
+    u32 tileX, tileY, tileNum, overlay, palette;
 
     if (gGameSelect->loadingSceneGfx) {
         return;
@@ -1440,6 +1443,35 @@ void game_select_scene_update(void *sVar, s32 dArg) {
     if (D_030046a8->data.extraData.updateUIMedals != 0) {
         D_030046a8->data.extraData.updateUIMedals = 0;
         game_select_refresh_medal_count(127);
+    }
+
+    if (D_030046a8->data.extraData.updateUILevels != 0) {
+        D_030046a8->data.extraData.updateUILevels = 0;
+        for (i = 0; i < TOTAL_LEVELS; i++) {
+            state = get_level_state_from_id(i);
+            if ((state == LEVEL_STATE_OPEN) || (state == LEVEL_STATE_CLEARED) || (state == LEVEL_STATE_HAS_MEDAL) || (state == LEVEL_STATE_PERFECT)) {
+                levelData = &level_data_table[i];
+                type = levelData->type;
+                if (type == LEVEL_TYPE_GAME || type == LEVEL_TYPE_REMIX) {
+                    state = get_level_state_with_perfect_from_id(i);
+                } else {
+                    state = get_level_state_from_id(i);
+                }
+                get_grid_xy_from_level_id(i, &x, &y);
+                tileX = 1 + (x * 5);
+                tileY = 4 + (y * 3);
+                overlay = level_icon_overlays_map[type][state];
+                tileNum = 1 + (levelData->icon * 9);
+                palette = level_icon_palette_table[levelData->icon];
+                game_select_print_icon_maps(28, 3, tileX, tileY, 3, 3, tileNum, palette);
+                tileNum = 1 + (overlay * 9) + 0x100;
+                if (overlay == LEVEL_ICON_OVERLAY_PERFECT) {
+                    game_select_print_icon_maps(24, 3, tileX + 1, tileY, 3, 3, tileNum, 8);
+                } else {
+                    game_select_print_icon_maps(24, 3, tileX, tileY, 3, 3, tileNum, 8);
+                }
+            }
+        }
     }
 
     bgOfsX = D_03004b10.BG_OFS[BG_LAYER_3].x;

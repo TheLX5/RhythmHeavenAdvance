@@ -110,6 +110,7 @@ extern struct SaveBuffer {
             u16 mcMuffins;
             u16 beepCount;
             u16 updateUIMedals;
+            u16 updateUILevels;
             u16 extraLevelScores[TOTAL_EXTRA_LEVELS];
             u16 extraLevelStates[TOTAL_EXTRA_LEVELS];
             u16 extraLevelTotalPlays[TOTAL_EXTRA_LEVELS];
