@@ -24,6 +24,7 @@ u32 get_music_base_tempo(struct SongHeader *seqData) {
 // [func_080102f4] Reset Rhythm Tengoku Game Save Data
 void reset_game_save_data(void) {
     struct TengokuSaveData *data = &D_030046a8->data;
+    uint32_t global_settings = *(volatile uint32_t *)0x09FFFE00;
     u32 i;
 
     data->gsCursorX = 2;
@@ -81,19 +82,37 @@ void reset_game_save_data(void) {
     D_030046a8->data.unk294[3] = 10;    // High Score - Quiz Show EX
     D_030046a8->data.unk294[8] = DIRECTSOUND_MODE_STEREO; // Sound Mode
 
+    /*
     set_level_state(data, LEVEL_KARATE_MAN, LEVEL_STATE_OPEN);
     set_level_state(data, LEVEL_CLAPPY_TRIO, LEVEL_STATE_CLOSED);
     set_level_state(data, LEVEL_SPACEBALL, LEVEL_STATE_CLOSED);
     set_level_state(data, LEVEL_RHYTHM_TWEEZERS, LEVEL_STATE_CLOSED);
     set_level_state(data, LEVEL_MARCHING_ORDERS, LEVEL_STATE_CLOSED);
     set_level_state(data, LEVEL_REMIX_1, LEVEL_STATE_CLOSED);
+    */
     data->drumKitsUnlocked[STUDIO_DRUM_STANDARD] = TRUE;
     data->readingMaterialUnlocked[READING_MATERIAL_WELCOME] = TRUE;
     data->readingMaterialUnlocked[READING_MATERIAL_MANUAL] = TRUE;
     data->readingMaterialUnlocked[READING_MATERIAL_CREDITS] = TRUE;
 
-    SET_ADVANCE_FLAG(data->advanceFlags, ADVANCE_FLAG_NON_JP_SFX);
-    SET_ADVANCE_FLAG(data->advanceFlags, ADVANCE_FLAG_NON_JP_MUSIC);
+    
+    if ((global_settings & 0x01) != 0x00) {
+        SET_ADVANCE_FLAG(data->advanceFlags, ADVANCE_FLAG_NON_JP_SFX);
+    } else {
+        CLEAR_ADVANCE_FLAG(data->advanceFlags, ADVANCE_FLAG_NON_JP_SFX);
+    }
+
+    if ((global_settings & 0x02) != 0x00) {
+        SET_ADVANCE_FLAG(data->advanceFlags, ADVANCE_FLAG_NON_JP_MUSIC);
+    } else {
+        CLEAR_ADVANCE_FLAG(data->advanceFlags, ADVANCE_FLAG_NON_JP_MUSIC);
+    }
+
+    if ((global_settings & 0x04) != 0x00) {
+        SET_ADVANCE_FLAG(data->advanceFlags, ADVANCE_FLAG_DISABLE_RUMBLE);
+    } else {
+        CLEAR_ADVANCE_FLAG(data->advanceFlags, ADVANCE_FLAG_DISABLE_RUMBLE);
+    }
 }
 
 

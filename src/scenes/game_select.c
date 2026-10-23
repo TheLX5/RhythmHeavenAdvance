@@ -96,7 +96,7 @@ s32 get_current_campaign(void) {
 
 // Decrement Plays Until Next Perfect Campaign
 void update_plays_until_next_campaign(void) {
-    if ((D_030046a8->data.campaignState == CAMPAIGN_STATE_AVAILABLE) && (get_level_state_from_id(LEVEL_REMIX_1) >= LEVEL_STATE_CLEARED)) {
+    if (D_030046a8->data.campaignState == CAMPAIGN_STATE_AVAILABLE) {
         if (D_030046a8->data.playsUntilNextCampaign > 0) {
             D_030046a8->data.playsUntilNextCampaign--;
         }
@@ -135,7 +135,8 @@ void start_new_campaign(void) {
         return;
     }
 
-    playsUntilNewCampaign = 0;
+    playsUntilNewCampaign = 1;
+    /*
     if (D_030046a8->data.totalMedals < BASE_CAMPAIGN_MEDAL_GATE) {
         playsUntilNewCampaign = 1;
     }
@@ -145,6 +146,7 @@ void start_new_campaign(void) {
     if (D_030046a8->data.totalMedals < (BASE_CAMPAIGN_MEDAL_GATE - 18)) {
         playsUntilNewCampaign = agb_random(4) + 3;
     }
+    */
 
     D_030046a8->data.campaignState = CAMPAIGN_STATE_AVAILABLE;
     D_030046a8->data.campaignAttemptsLeft = MAX_PERFECT_ATTEMPTS;
@@ -916,6 +918,7 @@ void game_select_scene_start(void *sVar, s32 dArg) {
     game_select_init_info_pane();
     game_select_set_info_pane_to_cursor_target();
     game_select_init_flow_pane();
+    D_030046a8->data.extraData.updateUIBeeps = 1;
 
     // Init. Events
     gGameSelect->totalLevelEventsQueued = 0;
@@ -941,9 +944,9 @@ void game_select_scene_start(void *sVar, s32 dArg) {
             gGameSelect->baristaLevelEventTimer = 60;
         }
 
-        if ((get_level_id_from_grid_xy(prevX, prevY) == LEVEL_REMIX_6) && (recentLevelState >= LEVEL_STATE_CLEARED)) {
+        /*if ((get_level_id_from_grid_xy(prevX, prevY) == LEVEL_REMIX_6) && (recentLevelState >= LEVEL_STATE_CLEARED)) {
             enable_game_select_2_bgm();
-        }
+        }*/
     } else {
         #ifdef TEMPOUP
         if (game_select_try_queue_tempo_up_unlock(TRUE)) {
@@ -1249,9 +1252,9 @@ void game_select_read_inputs(void) {
                     set_scene_trans_target(&scene_epilogue, &scene_game_select);
                     set_scene_trans_var(&scene_epilogue, (s32)levelData);
                     gameplay_pause_menu_set_quit_destination(&scene_game_select);
-                    if ((levelID == LEVEL_REMIX_6) && (levelState == LEVEL_STATE_OPEN)) {
+                    /*if ((levelID == LEVEL_REMIX_6) && (levelState == LEVEL_STATE_OPEN)) {
                         sPlayCreditsAfterEpilogue = TRUE;
-                    }
+                    }*/
                     canHaveCampaign = TRUE;
                     #ifdef PLUS
                     // hold select to replay a cleared campaign level
@@ -1420,12 +1423,64 @@ void game_select_link_sprite_xy_to_bg(s16 sprite) {
 
 // Scene Update (Active)
 void game_select_scene_update(void *sVar, s32 dArg) {
+    struct LevelData *levelData;
+    struct FlowDisplay *flowPane = &gGameSelect->flowDisplay;
     s16 bgOfsX, bgOfsY;
-    s32 i;
+    s32 i, x, y;
+    s32 id, state, type;
+    u32 tileX, tileY, tileNum, overlay, palette;
 
     if (gGameSelect->loadingSceneGfx) {
         return;
     }
+
+    if (D_030046a8->data.extraData.updateUIMedals != 0) {
+        D_030046a8->data.extraData.updateUIMedals = 0;
+        game_select_refresh_medal_count(127);
+    }
+
+    if (D_030046a8->data.extraData.updateUILevels != 0) {
+        D_030046a8->data.extraData.updateUILevels = 0;
+        for (i = 0; i < TOTAL_LEVELS; i++) {
+            state = get_level_state_from_id(i);
+            if ((state == LEVEL_STATE_OPEN) || (state == LEVEL_STATE_CLEARED) || (state == LEVEL_STATE_HAS_MEDAL) || (state == LEVEL_STATE_PERFECT)) {
+                levelData = &level_data_table[i];
+                type = levelData->type;
+                if (type == LEVEL_TYPE_GAME || type == LEVEL_TYPE_REMIX) {
+                    state = get_level_state_with_perfect_from_id(i);
+                } else {
+                    state = get_level_state_from_id(i);
+                }
+                get_grid_xy_from_level_id(i, &x, &y);
+                tileX = 1 + (x * 5);
+                tileY = 4 + (y * 3);
+                overlay = level_icon_overlays_map[type][state];
+                tileNum = 1 + (levelData->icon * 9);
+                palette = level_icon_palette_table[levelData->icon];
+                game_select_print_icon_maps(28, 3, tileX, tileY, 3, 3, tileNum, palette);
+                tileNum = 1 + (overlay * 9) + 0x100;
+                if (overlay == LEVEL_ICON_OVERLAY_PERFECT) {
+                    game_select_print_icon_maps(24, 3, tileX + 1, tileY, 3, 3, tileNum, 8);
+                } else {
+                    game_select_print_icon_maps(24, 3, tileX, tileY, 3, 3, tileNum, 8);
+                }
+            }
+        }
+    }
+
+    if (flowPane->state == FLOW_PANE_TASK_NONE) {
+        if (D_030046a8->data.extraData.updateUIBeeps != 0) {
+            D_030046a8->data.currentFlow += D_030046a8->data.extraData.beepCount;
+
+            flowPane->currentScore = D_030046a8->data.currentFlow;
+            flowPane->state = FLOW_PANE_TASK_WAIT;
+            flowPane->timer = 1;
+
+            D_030046a8->data.extraData.beepCount = 0;
+            D_030046a8->data.extraData.updateUIBeeps = 0;
+        }
+    } 
+
 
     bgOfsX = D_03004b10.BG_OFS[BG_LAYER_3].x;
     bgOfsY = D_03004b10.BG_OFS[BG_LAYER_3].y;
@@ -1571,6 +1626,9 @@ u32 game_select_check_level_event_req(s32 x, s32 y, s32 newState) {
     const s8 *requirements;
     s32 state;
 
+    // TODO: Make better
+    return FALSE;
+
     gridEntry = game_select_grid_data + x + (y * GS_GRID_WIDTH);
 
     if (gridEntry->id < 0) {
@@ -1603,7 +1661,7 @@ u32 game_select_check_level_event_req(s32 x, s32 y, s32 newState) {
         }
 
         if (requirements[0] == LEVEL_EVENT_REQ_TOTAL_MEDALS) {
-            if (saveData->totalMedals < (u8)requirements[1]) {
+            if (D_030046a8->data.extraData.mcMuffins < (u8)requirements[1]) {
                 return FALSE;
             }
             requirements += 3;
@@ -1762,7 +1820,7 @@ u32 game_select_process_level_event_targets(const s8 *eventTargets) {
                 }
             }
         }
-
+        /*
         else if (game_select_check_level_event_req(x, y, LEVEL_STATE_CLOSED)) {
             s32 args;
 
@@ -1778,7 +1836,7 @@ u32 game_select_process_level_event_targets(const s8 *eventTargets) {
             }
             save_level_state_from_grid_xy(x, y, LEVEL_STATE_APPEARING);
         }
-
+        */
         eventTargets += 2;
     }
 }
@@ -1836,7 +1894,7 @@ u32 game_select_process_level_events(void) {
             play_sound(&s_f_get_medal_seqData);
 
             D_030046a8->data.totalMedals++;
-            game_select_refresh_medal_count(127);
+            //game_select_refresh_medal_count(127);
             #ifdef TEMPOUP
             game_select_try_queue_tempo_up_unlock(FALSE);
             #endif
@@ -2028,7 +2086,7 @@ void game_select_init_medal_pane(void) {
     sprite_set_origin_x_y(gSpriteHandler, gGameSelect->medalPaneTitle, &bgOfs->x, &bgOfs->y);
     sprite_set_origin_x_y(gSpriteHandler, gGameSelect->medalPaneDigit1, &bgOfs->x, &bgOfs->y);
     sprite_set_origin_x_y(gSpriteHandler, gGameSelect->medalPaneDigit2, &bgOfs->x, &bgOfs->y);
-    game_select_set_medal_count(D_030046a8->data.totalMedals);
+    game_select_set_medal_count(D_030046a8->data.extraData.mcMuffins);
     gGameSelect->medalPaneFlickerTimer = 0;
 }
 
@@ -2055,7 +2113,7 @@ void game_select_update_medal_pane(void) {
 
 // Refresh Medal Count
 void game_select_refresh_medal_count(u32 flickerDuration) {
-    game_select_set_medal_count(D_030046a8->data.totalMedals);
+    game_select_set_medal_count(D_030046a8->data.extraData.mcMuffins);
     gGameSelect->medalPaneFlickerTimer = flickerDuration;
 }
 
@@ -2393,6 +2451,9 @@ u32 game_select_update_scores(void) {
         flowPane->currentScore = D_030046a8->data.currentFlow;
         return 0;
     }
+    flowPane->previousScore = D_030046a8->data.currentFlow;
+    flowPane->currentScore = D_030046a8->data.currentFlow;
+    return 0;
 
     x = saveData->recentLevelX;
     y = saveData->recentLevelY;
@@ -2448,8 +2509,8 @@ u32 game_select_update_scores(void) {
         flow = 9;
     }
 
-    flowPane->previousScore = saveData->currentFlow;
-    flowPane->currentScore = saveData->currentFlow = flow;
+    //flowPane->previousScore = saveData->currentFlow;
+    //flowPane->currentScore = saveData->currentFlow = flow;
 }
 
 
@@ -2482,11 +2543,12 @@ void game_select_init_flow_pane(void) {
         }
     }
 
-    flowPane->state = (flowPane->currentScore > 0) && updateFlow;
+    /*flowPane->state = (flowPane->currentScore > 0) && updateFlow;
     flowPane->timer = 60;
     if (D_030046a8->data.recentLevelClearedByBarista) {
         flowPane->timer = 180;
     }
+    */
 }
 
 
